@@ -12,13 +12,14 @@ ARG COMMIT=none
 ENV CGO_ENABLED=0 GOOS=linux
 
 RUN go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}" \
-  -o /out/app ./cmd/main.go
+  -o /out/app ./cmd/api/main.go
 
 FROM alpine:3.20
 RUN adduser -D -H -u 10001 appuser \
   && apk add --no-cache ca-certificates tzdata
 WORKDIR /app/backend
 COPY --from=builder /out/app /app/backend/app
+COPY internal/configs/*.json /app/backend/internal/configs/
 
 ENV PORT=3000
 EXPOSE 3000

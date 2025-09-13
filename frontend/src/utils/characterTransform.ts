@@ -24,7 +24,7 @@ export function transformCharacterData(char: Record<string, unknown>): Character
       score: relic.score as number,
       subStats: ((relic.sub_affix as Array<Record<string, unknown>>)?.map((sub) => ({
         stat: sub.name as string,
-        value: sub.value as string,
+        value: parseFloat(sub.value as string) || 0,
       })) || []),
     }));
   
@@ -42,7 +42,7 @@ export function transformCharacterData(char: Record<string, unknown>): Character
       score: relic.score as number,
       subStats: ((relic.sub_affix as Array<Record<string, unknown>>)?.map((sub) => ({
         stat: sub.name as string,
-        value: sub.value as string,
+        value: parseFloat(sub.value as string) || 0,
       })) || []),
     }));
   
