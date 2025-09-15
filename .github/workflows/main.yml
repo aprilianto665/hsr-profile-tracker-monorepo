@@ -129,6 +129,24 @@ jobs:
         run: |
           az acr login --name hsrregistry
 
+      - name: Resolve backend URL for FE build
+        run: |
+          URL=""
+          # Secret override takes precedence if provided
+          if [ -n "${{ secrets.FRONTEND_API_BASE_URL }}" ]; then
+            URL="${{ secrets.FRONTEND_API_BASE_URL }}"
+          else
+            # Try to fetch from Azure Container Apps (if backend already exists)
+            if az containerapp show -g hsr-rg -n hsr-backend >/dev/null 2>&1; then
+              FQDN=$(az containerapp show -g hsr-rg -n hsr-backend --query properties.configuration.ingress.fqdn -o tsv)
+              if [ -n "$FQDN" ]; then
+                URL="https://$FQDN"
+              fi
+            fi
+          fi
+          echo "VITE_API_BASE_URL=$URL" >> $GITHUB_ENV
+          echo "Resolved VITE_API_BASE_URL=$URL"
+
       - name: Build & push backend
         uses: docker/build-push-action@v5
         with:
@@ -142,6 +160,8 @@ jobs:
           context: ./frontend
           push: true
           tags: hsrregistry.azurecr.io/frontend:${{ github.sha }}
+          build-args: |
+            VITE_API_BASE_URL=${{ env.VITE_API_BASE_URL }}
 
   deploy:
     name: Deploy to Azure Container Apps
