@@ -148,16 +148,39 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy backend
+      - name: Ensure Container Apps Environment (create if missing)
         run: |
-          az containerapp update \
-            --name hsr-backend \
-            --resource-group hsr-rg \
-            --image hsrregistry.azurecr.io/backend:${{ github.sha }}
+          az containerapp env show -g hsr-rg -n hsr-env >/dev/null 2>&1 \
+            || az containerapp env create -g hsr-rg -n hsr-env -l southeastasia
 
-      - name: Deploy frontend
+      - name: Deploy backend (create or update)
         run: |
-          az containerapp update \
-            --name hsr-frontend \
-            --resource-group hsr-rg \
-            --image hsrregistry.azurecr.io/frontend:${{ github.sha }}
+          ACR_USER=$(az acr credential show -n hsrregistry --query username -o tsv)
+          ACR_PASS=$(az acr credential show -n hsrregistry --query passwords[0].value -o tsv)
+          if az containerapp show -g hsr-rg -n hsr-backend >/dev/null 2>&1; then
+            az containerapp update -g hsr-rg -n hsr-backend \
+              --image hsrregistry.azurecr.io/backend:${{ github.sha }}
+          else
+            az containerapp create -g hsr-rg -n hsr-backend \
+              --environment hsr-env \
+              --image hsrregistry.azurecr.io/backend:${{ github.sha }} \
+              --target-port 3000 --ingress external \
+              --registry-server hsrregistry.azurecr.io \
+              --registry-username "$ACR_USER" --registry-password "$ACR_PASS"
+          fi
+
+      - name: Deploy frontend (create or update)
+        run: |
+          ACR_USER=$(az acr credential show -n hsrregistry --query username -o tsv)
+          ACR_PASS=$(az acr credential show -n hsrregistry --query passwords[0].value -o tsv)
+          if az containerapp show -g hsr-rg -n hsr-frontend >/dev/null 2>&1; then
+            az containerapp update -g hsr-rg -n hsr-frontend \
+              --image hsrregistry.azurecr.io/frontend:${{ github.sha }}
+          else
+            az containerapp create -g hsr-rg -n hsr-frontend \
+              --environment hsr-env \
+              --image hsrregistry.azurecr.io/frontend:${{ github.sha }} \
+              --target-port 80 --ingress external \
+              --registry-server hsrregistry.azurecr.io \
+              --registry-username "$ACR_USER" --registry-password "$ACR_PASS"
+          fi
