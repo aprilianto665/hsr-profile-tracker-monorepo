@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"crypto/tls"
 	"log"
 	"os"
 	"strconv"
@@ -46,11 +47,17 @@ func ConnectRedis() {
 
 	addr := config.Host + ":" + strconv.Itoa(config.Port)
 
-	Rdb = redis.NewClient(&redis.Options{
+	opt := &redis.Options{
 		Addr:     addr,
 		Password: config.Password,
 		DB:       config.DB,
-	})
+	}
+
+	if os.Getenv("REDIS_TLS") == "true" {
+		opt.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+	}
+
+	Rdb = redis.NewClient(opt)
 
 	_, err := Rdb.Ping(Ctx).Result()
 	if err != nil {
