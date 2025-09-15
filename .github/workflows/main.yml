@@ -120,6 +120,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Select subscription
+        run: |
+          SUB=$(jq -r '.subscriptionId' <<< '${{ secrets.AZURE_CREDENTIALS }}')
+          az account set --subscription "$SUB"
+
       - name: Docker login to ACR
         run: |
           az acr login --name hsrregistry
