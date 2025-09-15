@@ -60,6 +60,8 @@ func main() {
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		port = ":3000"
+	} else if port[0] != ':' {
+		port = ":" + port
 	}
 
 	log.Fatal(app.Listen(port))
