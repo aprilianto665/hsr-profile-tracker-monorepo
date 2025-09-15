@@ -162,11 +162,18 @@ jobs:
 
       - name: Deploy backend (create or update)
         run: |
+          # Ensure ACR admin is enabled (needed to fetch username/password)
+          if [ "$(az acr show -n hsrregistry --query adminUserEnabled -o tsv)" != "true" ]; then
+            az acr update -n hsrregistry --admin-enabled true
+          fi
+
           ACR_USER=$(az acr credential show -n hsrregistry --query username -o tsv)
           ACR_PASS=$(az acr credential show -n hsrregistry --query passwords[0].value -o tsv)
           if az containerapp show -g hsr-rg -n hsr-backend >/dev/null 2>&1; then
             az containerapp update -g hsr-rg -n hsr-backend \
-              --image hsrregistry.azurecr.io/backend:${{ github.sha }}
+              --image hsrregistry.azurecr.io/backend:${{ github.sha }} \
+              --registry-server hsrregistry.azurecr.io \
+              --registry-username "$ACR_USER" --registry-password "$ACR_PASS"
           else
             az containerapp create -g hsr-rg -n hsr-backend \
               --environment hsr-env \
@@ -178,11 +185,18 @@ jobs:
 
       - name: Deploy frontend (create or update)
         run: |
+          # Ensure ACR admin is enabled (needed to fetch username/password)
+          if [ "$(az acr show -n hsrregistry --query adminUserEnabled -o tsv)" != "true" ]; then
+            az acr update -n hsrregistry --admin-enabled true
+          fi
+
           ACR_USER=$(az acr credential show -n hsrregistry --query username -o tsv)
           ACR_PASS=$(az acr credential show -n hsrregistry --query passwords[0].value -o tsv)
           if az containerapp show -g hsr-rg -n hsr-frontend >/dev/null 2>&1; then
             az containerapp update -g hsr-rg -n hsr-frontend \
-              --image hsrregistry.azurecr.io/frontend:${{ github.sha }}
+              --image hsrregistry.azurecr.io/frontend:${{ github.sha }} \
+              --registry-server hsrregistry.azurecr.io \
+              --registry-username "$ACR_USER" --registry-password "$ACR_PASS"
           else
             az containerapp create -g hsr-rg -n hsr-frontend \
               --environment hsr-env \
