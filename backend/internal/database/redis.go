@@ -23,10 +23,14 @@ func LoadRedisConfig() RedisConfig {
 		host = "localhost"
 	}
 	portStr := os.Getenv("REDIS_PORT")
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		port = 6379
+	if portStr == "" {
+		if os.Getenv("REDIS_TLS") == "true" {
+			portStr = "6380"
+		} else {
+			portStr = "6379"
+		}
 	}
+	port, _ := strconv.Atoi(portStr)
 
 	password := os.Getenv("REDIS_PASSWORD")
 
@@ -54,7 +58,10 @@ func ConnectRedis() {
 	}
 
 	if os.Getenv("REDIS_TLS") == "true" {
-		opt.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+		opt.TLSConfig = &tls.Config{
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: false,
+		}
 	}
 
 	Rdb = redis.NewClient(opt)
