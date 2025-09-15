@@ -150,8 +150,10 @@ jobs:
 
       - name: Ensure Container Apps Environment (create if missing)
         run: |
-          az containerapp env show -g hsr-rg -n hsr-env >/dev/null 2>&1 \
-            || az containerapp env create -g hsr-rg -n hsr-env -l southeastasia
+          az containerapp env show -g hsr-rg -n hsr-env >/dev/null 2>&1 || \
+          az containerapp env create -g hsr-rg -n hsr-env -l southeastasia \
+            --logs-workspace-id "${{ secrets.AZ_LAW_ID }}" \
+            --logs-workspace-key "${{ secrets.AZ_LAW_KEY }}"
 
       - name: Deploy backend (create or update)
         run: |
