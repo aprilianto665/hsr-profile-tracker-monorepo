@@ -11,10 +11,11 @@ import (
 )
 
 type RedisConfig struct {
-	Host     string
-	Port     int
-	Password string
-	DB       int
+	Host      string
+	Port      int
+	Password  string
+	DB        int
+	TLSConfig *tls.Config
 }
 
 func LoadRedisConfig() RedisConfig {
@@ -40,7 +41,14 @@ func LoadRedisConfig() RedisConfig {
 		db = 0
 	}
 
-	return RedisConfig{Host: host, Port: port, Password: password, DB: db}
+	var tlsCfg *tls.Config
+	if os.Getenv("REDIS_TLS") == "true" {
+		tlsCfg = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+	}
+
+	return RedisConfig{Host: host, Port: port, Password: password, DB: db, TLSConfig: tlsCfg}
 }
 
 var Ctx = context.Background()
@@ -52,16 +60,10 @@ func ConnectRedis() {
 	addr := config.Host + ":" + strconv.Itoa(config.Port)
 
 	opt := &redis.Options{
-		Addr:     addr,
-		Password: config.Password,
-		DB:       config.DB,
-	}
-
-	if os.Getenv("REDIS_TLS") == "true" {
-		opt.TLSConfig = &tls.Config{
-			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: false,
-		}
+		Addr:      addr,
+		Password:  config.Password,
+		DB:        config.DB,
+		TLSConfig: config.TLSConfig,
 	}
 
 	Rdb = redis.NewClient(opt)

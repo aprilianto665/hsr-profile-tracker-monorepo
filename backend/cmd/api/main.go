@@ -23,10 +23,11 @@ func main() {
 	redisConfig := database.LoadRedisConfig()
 
 	store := rstorage.New(rstorage.Config{
-		Host:     redisConfig.Host,
-		Port:     redisConfig.Port,
-		Password: redisConfig.Password,
-		Database: redisConfig.DB,
+		Host:      redisConfig.Host,
+		Port:      redisConfig.Port,
+		Password:  redisConfig.Password,
+		Database:  redisConfig.DB,
+		TLSConfig: redisConfig.TLSConfig,
 	})
 
 	app.Use(limiter.New(limiter.Config{
