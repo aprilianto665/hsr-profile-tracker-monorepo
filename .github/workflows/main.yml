@@ -45,7 +45,7 @@ jobs:
 
       - name: Build (sanity)
         run: |
-          CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o ./ci-app .
+          CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o ./ci-app ./cmd/api
 
   frontend-web:
     name: Frontend • Install & build
