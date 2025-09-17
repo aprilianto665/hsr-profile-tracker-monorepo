@@ -30,6 +30,7 @@ func main() {
 		TLSConfig: redisConfig.TLSConfig,
 	})
 
+if os.Getenv("APP_ENV") == "production" {
 	app.Use(limiter.New(limiter.Config{
 		Max:        100,
 		Expiration: time.Minute,
@@ -41,6 +42,7 @@ func main() {
 			})
 		},
 	}))
+}
 
 	chars, err := configs.LoadCharacterWeights("internal/configs/character_weights.json")
 	if err != nil {
