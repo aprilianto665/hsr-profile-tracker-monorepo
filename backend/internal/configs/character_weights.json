@@ -2254,5 +2254,30 @@
       "Broken Keel",
       "Fleet of the Ageless"
     ]
+  },
+  {
+    "id": ["1413"],
+    "character": "Evernight",
+    "substat_weights": {
+      "CriticalChanceBase": 1.0,
+      "CriticalDamageBase": 1.0,
+      "SpeedDelta": 1.0,
+      "HPAddedRatio": 0.75,
+      "HPDelta": 0.75
+    },
+    "main_stats": {
+      "Body": ["CriticalDamageBase"],
+      "Feet": ["HPAddedRatio", "SpeedDelta"],
+      "Sphere": ["IceAddedRatio", "HPAddedRatio"],
+      "Rope": ["HPAddedRatio", "SPRatioBase"]
+    },
+    "usable_sets": [
+      "World-Remaking Deliverer",
+      "Scholar Lost in Erudition",
+      "Longevous Disciple",
+      "Hunter of Glacial Forest",
+      "Bone Collection's Serene Demesne",
+      "Arcadia of Woven Dreams"
+    ]
   }
 ]
